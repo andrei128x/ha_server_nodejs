@@ -4,32 +4,31 @@
     TODO:     make connected sensors to  be plug-and-play: parse returned json and return a list compatible with model
 */
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const http = require('http');
+import * as express from 'express';
+import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
+import * as httpServer from 'http';
 
-function startTestHttpServer () {
+export function startTestHttpServer()
+{
   const PORT = 3001;
 
   const app = express();
   const router = express.Router();
-  this.router = router;
+  // this.router = router;
 
   app.use(bodyParser.json());
   app.use(cors());
   app.use('/', router);
 
   // defining fallback route here
-  app.get('/tests/click', function (req, res) {
+  app.get('/tests/click', (req, res) =>
+  {
     res.status(200).send('{}');
   });
 
-  app.listen(PORT, function () {
+  app.listen(PORT, () =>
+  {
     console.log(`[TEST] server de test pe portul ${PORT}`);
   });
 }
-
-module.exports = {
-  startTestHttpServer: startTestHttpServer
-};

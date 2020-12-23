@@ -1,0 +1,39 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2017",
+        "lib": [
+            "es2015.collection",
+            "es2016.array.include",
+            "es2017"
+        ],
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "strictNullChecks": true,
+        "downlevelIteration": true,
+        "forceConsistentCasingInFileNames": true,
+        "listEmittedFiles": false,
+        "listFiles": false,
+        "noEmitOnError": true,
+        "noErrorTruncation": true,
+        "traceResolution": false,
+        "alwaysStrict": true,
+        "allowJs": false,
+        "checkJs": false,
+        "typeRoots": ["node_modules/@types", "node_modules/typed-rest-client", "typings"],
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true
+    },
+    "exclude": [
+        "bin",
+        "obj",
+        "node_modules",
+        "sourceMaps",
+        "dist",
+        "scripts"
+    ],
+    "compileOnSave": false,
+    "typeAcquisition": {
+        "enable": true
+    }
+}
