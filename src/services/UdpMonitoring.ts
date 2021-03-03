@@ -8,7 +8,6 @@
 
 // import section
 import dgram = require('dgram');
-const serverUDP = dgram.createSocket('udp4');
 
 import fs = require('fs');
 import https = require('https');
@@ -16,9 +15,11 @@ import WebSocket = require('ws');
 import { Timestamp } from 'rxjs';
 import { Server } from 'http';
 import { EnvironmentMapper } from '../utils/environmentMapper';
+import * as servicesHttpServer from './HttpUtilities';
 
 // global state variable that keeps track of Mongo connection
 const VARS = EnvironmentMapper.parseEnvironment();
+const serverUDP = dgram.createSocket('udp4');
 
 
 export class ServiceUdpMonitoring
@@ -27,6 +28,8 @@ export class ServiceUdpMonitoring
     // oldTime: number = Date.now();
     wss: WebSocket.Server = null;
     timeHistory: { [from: string]: number } = {}
+    state: String;
+    data = '00000';
 
     constructor(serverHttp: Server)
     {
@@ -61,7 +64,7 @@ export class ServiceUdpMonitoring
     }
 
 
-    private messageReceived(msg: string, rinfo: dgram.RemoteInfo)
+    private async messageReceived(msg: string, rinfo: dgram.RemoteInfo)
     {
         // console.log(rinfo.address);
         // return;
@@ -72,28 +75,41 @@ export class ServiceUdpMonitoring
 
             raw = JSON.parse(msg);
 
-            let state: String;
             switch (raw.gateState)
             {
                 case 1:
-                    state = 'IDLE';
+                    this.state = 'IDLE';
                     break;
                 case 2:
-                    state = 'DEBOUNCE';
+                    this.state = 'DEBOUNCE'; // TODO - add timer to count how long does it take to open the gate and to send it directly via websocket !!
                     break;
                 case 3:
-                    state = 'OPENING';
+                    if (this.state == 'DEBOUNCE')
+                    {
+                        const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Opening&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
+                        console.log(wirePusherURL);
+
+                        await servicesHttpServer.getJsonPromise(wirePusherURL);
+                    }
+                    this.state = 'OPENING';
                     break;
                 case 4:
-                    state = 'OPENED';
+                    this.state = 'OPENED';
                     break;
                 case 5:
-                    state = 'CLOSING';
+                    if (this.state == 'DEBOUNCE')
+                    {
+                        const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Closing&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
+                        console.log(wirePusherURL);
+
+                        await servicesHttpServer.getJsonPromise(wirePusherURL);
+                    }
+                    this.state = 'CLOSING';
                     break
                 case 6:
-                    state = 'CLOSED';
+                    this.state = 'CLOSED';
                     break;
-                default: state = 'INIT';
+                default: this.state = 'INIT';
             }
 
             const vars =
@@ -113,7 +129,7 @@ export class ServiceUdpMonitoring
 
             this.wss.clients.forEach(socket =>
             {
-                if (rinfo.address == VARS.URL_HEARTBEAT_GATE_PING_ADDR) socket.send(`${state}`);
+                if (rinfo.address == VARS.URL_HEARTBEAT_GATE_PING_ADDR) socket.send(`${this.state}`);
             })
 
             let elapsed: string | number;
@@ -122,13 +138,69 @@ export class ServiceUdpMonitoring
             elapsed = this.timeHistory[rinfo.address] ? timeNow - this.timeHistory[rinfo.address] : 'N/A';
             this.timeHistory[rinfo.address] = timeNow;
 
-            console.log(`[RX]: ${printMsg} | ${(state as String).padStart(8, ' ')} | delta(ms): ${elapsed} | ${rinfo.address}`);
+            console.log(`[UDP][RX]: ${printMsg} | ${(this.state as String).padStart(8, ' ')} | delta(ms): ${elapsed} | ${rinfo.address}`);
 
             // this.oldTime = timeNow;
             // this.timeHistory['from']
 
             // serverUDP.send(printMsg, 2001, '192.168.100.32');
 
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();            
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();            
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            this.arduinoUdpFun();
+            
+            
             this.counter++;
         }
         catch (err)
@@ -138,6 +210,16 @@ export class ServiceUdpMonitoring
 
     }
 
+    private arduinoUdpFun()
+    {
+        const index = Math.floor(Math.random()*5);
+        const val = Math.floor(Math.random()*10);
+
+        this.data = this.data.substring(0,index) + val + this.data.substring(index+1);
+
+        // serverUDP.send(this.data, 8888, '192.168.1.39'); // fun with Arduino - test
+        serverUDP.send(String(Math.floor(Math.random()*10000)).padStart(4,'0'), 8888, '192.168.1.39'); // fun with Arduino - test
+    }
 
     private connectionStarted(ws: WebSocket)
     {

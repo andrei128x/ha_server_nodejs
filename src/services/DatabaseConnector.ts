@@ -27,10 +27,15 @@ export async function databaseConnect()
         await mongooseConnect
             (
                 mongoServer
-                , { useNewUrlParser: true }
+                , { useNewUrlParser: true, useUnifiedTopology: true }
                 , err =>
                 {
-                    if (err) { console.log(`[DB][CONNECT] callback result: ${err}; throwing error so it does not hang`); throw (err); }
+                    if (err) 
+                    {
+                        console.log(`[DB][CONNECT] callback result: ${err}`);
+                        // console.log(`[DB][CONNECT] callback result: ${err}; throwing error so it does not hang`);
+                        // throw (err);
+                    }
                 }
             );
 
@@ -47,13 +52,14 @@ export async function databaseConnect()
 }
 
 // insert array of properties into the MongoDB database
-export async function insertSomeDataPromise(data: any)
+export async function insertSomeDataPromise(data: any[])
 {
     try
     {
         sensorData.insertMany
             (
                 data,
+                {},
                 (error: any, dataAdded: any) =>
                 {
                     if (error)
@@ -80,9 +86,9 @@ export async function findSomeDataPromise(deviceName: string, propertyName: stri
             (
                 { sensor_name: deviceName, property_name: propertyName },
                 null,
-                { limit: 2880, sort: { _id: -1 }, socketTimeoutMS: 1000 }
-                // {limit: 288, sort:{_id: -1}}
-                , (err: any) => { if (err) { console.log(`[DB][SEARCH] callback result: ${err}; throwing error so it does not hang`); } }
+                // { limit: 2880, sort: { _id: -1 }, socketTimeoutMS: 1000 }
+                { limit: 2880, sort: { _id: -1 } },
+                // (err: any) => { if (err) { console.log(`[DB][SEARCH] callback result: ${err}; throwing error so it does not hang`); } }
             );
         return data;
     }
@@ -98,8 +104,8 @@ export async function removeSomeData(daysAgo?: any)
     try
     {
         const result = sensorData.deleteMany(
-            { timestamp: { $lt: Date.now() - 1000 * 3600 * 24 * 7 * 6 } } // more than 6 weeks old to milliseconds
-            ,
+            { timestamp: { $lt: String(Date.now() - 1000 * 3600 * 24 * 7 * 6) } }, // more than 6 weeks old to milliseconds
+            {},
             (err: any) => { if (true) { console.log(`[DB][CLEAN-UP] callback result: ${err}`); } }
         );
 

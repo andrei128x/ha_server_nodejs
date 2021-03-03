@@ -8,6 +8,8 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as http from 'http';
+import * as https from 'https';
+
 
 const PORT = 3000;
 
@@ -45,7 +47,9 @@ export async function getJsonPromise(url: string): Promise<string>
     {
         process.stdout.write('[HTTP]');
 
-        const req = http.get(url, resp =>
+        const engine = url.includes('https://') ? https : http; // work-around to make it work with either HTTP and HTTPS 
+
+        const req = engine.get(url, resp =>
         {
             let data: string = '';
 
@@ -90,7 +94,7 @@ export async function requestJsonPromise(url: string, data?: any): Promise<strin
         let post_payload = JSON.stringify(data.data);
 
         let options = {
-            method: data.method || 'GET' ,
+            method: data.method || 'GET',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Content-Length': Buffer.byteLength(post_payload)
@@ -105,7 +109,7 @@ export async function requestJsonPromise(url: string, data?: any): Promise<strin
             resp.on('data', chunk =>
             {
                 data += chunk;
-                console.log(chunk);
+                // console.log(` >>>> data chunk: ${chunk}`);
             });
 
             // The whole response has been received. Print out the result.
@@ -126,8 +130,8 @@ export async function requestJsonPromise(url: string, data?: any): Promise<strin
             reject('ERR_TIMEOUT');
         });
 
-        console.log(`>>>> ${post_payload}`);
-        
+        // console.log(`>>>> ${post_payload}`);
+
         req.write(post_payload);
         req.end;
     });

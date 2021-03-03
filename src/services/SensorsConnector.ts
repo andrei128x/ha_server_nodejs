@@ -5,7 +5,7 @@
 */
 
 // require section
-import { getJsonPromise } from './servicesHttp';
+import { getJsonPromise } from './HttpUtilities';
 import { Observable, Subscriber } from 'rxjs';
 import { ISensorModel } from '../models/models';
 import { ISensorData, ISensorRawData } from '../interfaces/interfaces';
