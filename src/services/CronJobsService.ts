@@ -6,7 +6,6 @@ import * as sensorsInterface from './SensorsConnector';
 import { Request } from 'express';
 import * as cors from 'cors';
 import * as http from 'http';
-import { logOthers } from '../utils/utils';
 
 import * as servicesHttpServer from './HttpUtilities';
 import * as servicesMongoData from './DatabaseConnectorService';
