@@ -9,7 +9,7 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as http from 'http';
 import * as https from 'https';
-import * as rateLimit from 'express-rate-limit';
+import * as RateLimiter from 'express-rate-limit';
 
 
 const PORT = 3000;
@@ -23,6 +23,11 @@ export function initExpressApp(): http.Server
     app.use(cors());
     app.use('/', router);
     app.disable('x-powered-by');
+
+    const rateLimit = RateLimiter({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100 // limit each IP to 100 requests per windowMs
+      });
 
     app.use(rateLimit);
 
