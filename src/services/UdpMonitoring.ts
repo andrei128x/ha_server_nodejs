@@ -12,7 +12,6 @@ import dgram = require('dgram');
 import fs = require('fs');
 import https = require('https');
 import WebSocket = require('ws');
-import { Timestamp } from 'rxjs';
 import { Server } from 'http';
 import { EnvironmentMapper } from '../utils/environmentMapper';
 import * as servicesHttpServer from './HttpUtilities';
@@ -37,7 +36,7 @@ export class ServiceUdpMonitoring
             cert: fs.readFileSync('/home/focus7/certbot/cert1.pem'),
             key: fs.readFileSync('/home/focus7/certbot/privkey1.pem')
         });
-
+        
         serverUDP.on('error', (err) =>
         {
             console.log(`serverUDP error:\n${err.stack}`);
@@ -145,61 +144,7 @@ export class ServiceUdpMonitoring
 
             // serverUDP.send(printMsg, 2001, '192.168.100.32');
 
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
             this.arduinoUdpFun();            
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();            
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            this.arduinoUdpFun();
-            
             
             this.counter++;
         }
@@ -218,14 +163,14 @@ export class ServiceUdpMonitoring
         this.data = this.data.substring(0,index) + val + this.data.substring(index+1);
 
         // serverUDP.send(this.data, 8888, '192.168.1.39'); // fun with Arduino - test
-        serverUDP.send(String(Math.floor(Math.random()*10000)).padStart(4,'0'), 8888, '192.168.1.39'); // fun with Arduino - test
+        serverUDP.send(String(Math.floor(Math.random()*10000)).padStart(4,'0'), 8888, '192.168.1.48'); // fun with Arduino - test
     }
 
     private connectionStarted(ws: WebSocket)
     {
         ws.on('message', function incoming(message)
         {
-            console.log('received: %s', message);
+            console.log(`received websocket: '${message}' from ${ws}`);
         });
     }
 }

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EnvironmentMapper = void 0;
 const interfaces_1 = require("../interfaces/interfaces");
 const dotenv_1 = require("dotenv");
 const utils_1 = require("./utils");
@@ -9,7 +10,7 @@ class EnvironmentMapper {
         this.VARS = {};
     }
     static parseEnvironment() {
-        const envFile = './.env';
+        const envFile = './system-vars.env';
         // logOthers({ 'x': resolve(envFile) });
         let environmentData;
         if (!EnvironmentMapper.prototype.VARS) {

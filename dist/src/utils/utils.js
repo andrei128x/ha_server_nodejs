@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.throwHere = exports.logOthers = exports.EGlobalError = void 0;
 class EGlobalError extends Error {
     constructor(message) {
         super(message ? message : `unknown error`);

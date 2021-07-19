@@ -7,7 +7,6 @@
 // require section
 import { getJsonPromise } from './HttpUtilities';
 import { Observable, Subscriber } from 'rxjs';
-import { ISensorModel } from '../models/models';
 import { ISensorData, ISensorRawData } from '../interfaces/interfaces';
 
 const ERROR_DATA = {

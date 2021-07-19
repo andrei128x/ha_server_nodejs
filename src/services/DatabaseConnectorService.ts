@@ -7,7 +7,7 @@
 import { connect as mongooseConnect, Query } from 'mongoose';
 
 // const router = express.Router();
-import { sensorData, ISensorModel } from '../models/models';
+import { sensorData, ISensorModel } from '../models/MongoModel';
 import { throwHere, logOthers } from '../utils/utils';
 import { EnvironmentMapper } from '../utils/environmentMapper';
 import { log } from 'util';
