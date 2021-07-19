@@ -1,6 +1,6 @@
 import { IEnvList, IsEnvList, IEnvVariable } from '../interfaces/interfaces';
 import { DotenvParseOutput, config } from 'dotenv';
-import { throwHere, logOthers } from './utils';
+import { throwHere } from './utils';
 import { resolve } from 'path';
 
 export class EnvironmentMapper implements IEnvList
