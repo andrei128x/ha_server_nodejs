@@ -104,7 +104,7 @@ export class ServiceUdpMonitoring
                         await servicesHttpServer.getJsonPromise(wirePusherURL);
                     }
                     this.state = 'CLOSING';
-                    break
+                    break;
                 case 6:
                     this.state = 'CLOSED';
                     break;
@@ -122,7 +122,7 @@ export class ServiceUdpMonitoring
                 , "stable": raw.stableSig.toString().padStart(2, " ")
                 , "state": raw.gateState.toString().padStart(2, " ")
                 , "RSSI": raw.RSSI.toString().padStart(4, " ")
-            }
+            };
 
             const printMsg = `{ "C":${this.counter}, "A0":${vars.ADC0}, "A1":${vars.ADC1}, "avg0":${vars.avg0}, "avg1":${vars.avg1}, "read0":${vars.read0}, "read1":${vars.read1}, "stable":${vars.stable}, "state":${vars.state}, "RSSI":${vars.RSSI} }`;
 

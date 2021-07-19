@@ -9,6 +9,7 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as http from 'http';
 import * as https from 'https';
+import * as rateLimit from 'express-rate-limit';
 
 
 const PORT = 3000;
@@ -22,6 +23,8 @@ export function initExpressApp(): http.Server
     app.use(cors());
     app.use('/', router);
     app.disable('x-powered-by');
+
+    app.use(rateLimit);
 
     // defining fallback route here
     app.get('*', (req, res) =>
