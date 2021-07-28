@@ -1,10 +1,9 @@
 import * as ping from 'ping';
-import { IEnvVariable, ISensorData } from '../interfaces/interfaces';
+import { IEnvVariable, ISensorData, IsEnvList } from '../interfaces/interfaces';
 import { ISensorModel } from '../models/MongoModel';
 import { CronJob } from '../models/CronJobModel';
 import * as sensorsInterface from './SensorsConnector';
 import { Request } from 'express';
-import * as cors from 'cors';
 import * as http from 'http';
 
 import * as servicesHttpServer from './HttpUtilities';
@@ -13,35 +12,41 @@ import * as servicesMongoData from './DatabaseConnectorService';
 export class Jobs
 {
 
-    static httpServer:http.Server|null = null; // Express service available without database connection
-    static serviceMongoActive:Boolean = false; // global state variable that keeps track of Mongo connection
-    static VARS:IEnvVariable|null = null;
+    static httpServer: http.Server | null = null; // Express service available without database connection
+    static serviceMongoActive: Boolean = false; // global state variable that keeps track of Mongo connection
+    static VARS: IEnvVariable;
 
     private constructor()
     {
 
     }
 
-    static async init(envData:IEnvVariable)
+    static async init(envData: IEnvVariable)
     {
-        Jobs.VARS = envData;
+        if (IsEnvList(envData))
+        {
+            Jobs.VARS = envData;
 
-        Jobs.httpServer = await servicesHttpServer.initExpressApp(); // Express service available without database connection
-        Jobs.serviceMongoActive = await servicesMongoData.databaseConnect();
+            Jobs.httpServer = await servicesHttpServer.initExpressApp(); // Express service available without database connection
+            Jobs.serviceMongoActive = await servicesMongoData.databaseConnect();
 
-        Jobs.setUpRouteGateOpener();
-        Jobs.setUpRouteGateOpenerMOCK();
-    
-        Jobs.setUpRouteDoorLightSwitch();
-    
-        Jobs.setUpRouteOutgoingSensorsData();
-        Jobs.setUpRouteIncomingSensorsStream();
-    
-        Jobs.setUpPeriodicAutoCleanUp();
-    
-        Jobs.setUpPingGateHeartbeat();
-        Jobs.setUpPingDoorLightHeartbeat();
+            Jobs.setUpRouteGateOpener();
+            Jobs.setUpRouteGateOpenerMOCK();
 
+            Jobs.setUpRouteDoorLightSwitch();
+
+            Jobs.setUpRouteOutgoingSensorsData();
+            Jobs.setUpRouteIncomingSensorsStream();
+
+            Jobs.setUpPeriodicAutoCleanUp();
+
+            Jobs.setUpPingGateHeartbeat();
+            Jobs.setUpPingDoorLightHeartbeat();
+        }
+        else 
+        {
+            throw (`ENV is empty`);
+        }
 
         return Jobs.httpServer;
 
@@ -101,7 +106,7 @@ export class Jobs
             try
             {
                 // let data = await servicesHttpServer.getJsonPromise(URL_DEVICE_GATE_OPENER_MOCK) // testing one
-                const data = await servicesHttpServer.getJsonPromise(Jobs.VARS.URL_DEVICE_GATE_OPENER); // real one
+                const data = await servicesHttpServer.requestJsonPromise(Jobs.VARS.URL_DEVICE_GATE_OPENER); // real one
 
                 console.log('[OK][INDEX] Servo button responded correctly');
 
@@ -134,7 +139,7 @@ export class Jobs
                 const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Event&message=${new Date().toLocaleTimeString()}&type=YourCustomType&message_id=${Date.now()}`;
                 console.log(wirePusherURL);
 
-                const data = await servicesHttpServer.getJsonPromise(Jobs.VARS.URL_DEVICE_GATE_OPENER_MOCK) // testing one
+                const data = await servicesHttpServer.requestJsonPromise(Jobs.VARS.URL_DEVICE_GATE_OPENER_MOCK) // testing one
                 //const data = await servicesHttpServer.getJsonPromise(VARS.URL_DEVICE_GATE_OPENER_MOCK); // real one
 
                 console.log('[OK][INDEX] MOCK Servo button responded correctly');

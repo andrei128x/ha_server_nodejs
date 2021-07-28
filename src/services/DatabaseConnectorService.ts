@@ -4,13 +4,12 @@
 */
 
 // connect to MLAB.COM's account
-import { connect as mongooseConnect, Query } from 'mongoose';
+import { connect as mongooseConnect } from 'mongoose';
 
 // const router = express.Router();
-import { sensorData, ISensorModel } from '../models/MongoModel';
+import { sensorData } from '../models/MongoModel';
 import { throwHere, logOthers } from '../utils/utils';
 import { EnvironmentMapper } from '../utils/environmentMapper';
-import { log } from 'util';
 
 const mongoServer = EnvironmentMapper.parseEnvironment().URL_MONGO_SERVER;
 

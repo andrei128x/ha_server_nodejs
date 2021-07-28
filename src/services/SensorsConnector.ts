@@ -5,7 +5,7 @@
 */
 
 // require section
-import { getJsonPromise } from './HttpUtilities';
+import { requestJsonPromise } from './HttpUtilities';
 import { Observable, Subscriber } from 'rxjs';
 import { ISensorData, ISensorRawData } from '../interfaces/interfaces';
 
@@ -63,7 +63,7 @@ export function getJsonDataObservable(url: string)
     {
       try
       {
-        const data = await getJsonPromise(url);
+        const data = await requestJsonPromise(url);
 
         // data.temperature = "-127.00";
         console.log('[OK][SENSOR_IF] data from http connection: ', data);

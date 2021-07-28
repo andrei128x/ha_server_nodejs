@@ -4,10 +4,9 @@
     TODO:     make connected sensors to  be plug-and-play: parse returned json and return a list compatible with model
 */
 
-import * as express from 'express';
+import express from 'express';
 import * as bodyParser from 'body-parser';
-import * as cors from 'cors';
-import * as httpServer from 'http';
+import cors from 'cors';
 
 export function startTestHttpServer()
 {
