@@ -153,7 +153,6 @@ export async function requestJsonPromise(url: string, data?: any): Promise<strin
         // console.log(`>>>> ${post_payload}`);
 
         req.write(post_payload);
-        req.end();
     });
 
     return await tmpPromise;
