@@ -8,6 +8,7 @@ import * as http from 'http';
 
 import * as servicesHttpServer from './HttpUtilities';
 import * as servicesMongoData from './DatabaseConnectorService';
+import rateLimit from 'express-rate-limit';
 
 export class Jobs
 {
@@ -54,8 +55,13 @@ export class Jobs
 
     static setUpRouteOutgoingSensorsData()
     {
+        const apiLimiter = rateLimit({
+            windowMs: 15 * 60 * 1000, // 15 minutes
+            max: 100
+          });
+
         // TODO : Analyze the possibility to replace the POLLING API with realtime UDP communication
-        servicesHttpServer.router.get('/api', async (req: Request, res: any, next: any) =>
+        servicesHttpServer.router.get('/api', apiLimiter, async (req: Request, res: any, next: any) =>
         {
             try
             {
