@@ -1,4 +1,5 @@
-import * as arpScanner from 'arpscan/promise';
+const arpscan = require('arpscan/promise');
+// import arpScanner from "arpscan/promise";
 
 const options = {
     command: '/usr/sbin/arp-scan',
@@ -8,26 +9,17 @@ const options = {
     sudo: false
 }
 
-// function onResult(data)
-// {
-//     console.log(`ARP results:\n ${data}`);
-// }
-
-// function onError(err)
-// {
-//     console.log(`ARP resolutions error:${err}`);
-// }
-
 let deviceList = [];
 let newList = [];
 
-export async function scanNetwork(env)
+export async function scanNetwork(env: unknown)
 {
     try
     {
-        deviceList = await arpScanner(options); // use the 'arp-scan' Linux tool to scan for network devices
+        // deviceList = await arpscan.arpScanner(   options); // use the 'arp-scan' Linux tool to scan for network devices
+        deviceList = await arpscan(options);
 
-        deviceList.forEach(element =>
+        deviceList.forEach((element: any) =>
         {
             if (element.vendor.includes('Espressif'))
             {
@@ -45,12 +37,9 @@ export async function scanNetwork(env)
     {
         console.log(err);
     }
-
-
-
 }
 
-function updateEnvironmentData(envData, element)
+function updateEnvironmentData(envData: any, element: any)
 {
 
     console.log(`   found device: ${element.mac}`);

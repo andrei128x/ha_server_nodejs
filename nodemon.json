@@ -1,7 +1,13 @@
 {
-    "watch": ["src/*", "system-vars.env"],
-    "ext": "ts",
-    "ignore": ["src/**/*.spec.ts"],
-    "exec": "ts-node ./src/index.ts",
-    "verbose": true
-  }
+  "watch": [
+    "src/*",
+    "@types/",
+    "system-vars.env"
+  ],
+  "ext": "ts",
+  "ignore": [
+    "src/**/*.spec.ts"
+  ],
+  "exec": "ts-node --project ./tsconfig.json ./src/index.ts",
+  "verbose": true
+}

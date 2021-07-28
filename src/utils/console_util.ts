@@ -4,15 +4,16 @@ export function setConsole()
 {
     ['debug', 'log', 'warn', 'error'].forEach((methodName) =>
     {
-        const originalLoggingMethod = console[methodName];
-        console[methodName] = (firstArgument, ...otherArguments) =>
+        const originalLoggingMethod: any = console[methodName as keyof Console];
+
+        console[methodName as keyof Console] = (firstArgument: any, ...otherArguments: any) =>
         {
             const originalPrepareStackTrace = Error.prepareStackTrace;
             Error.prepareStackTrace = (_, stack) => stack;
-            
-            const callee: any = new Error().stack[1];
+
+            const callee: any = new Error().stack![1];
             Error.prepareStackTrace = originalPrepareStackTrace;
-            
+
             // const relativeFileName = path.relative(process.cwd(), callee.getFileName());
             const relativeFileName = path.relative(process.cwd(), callee.getFileName()).split('/')[2]; // only filename, w/o path
             const prefix = `${relativeFileName}:${callee.getLineNumber()}:`;

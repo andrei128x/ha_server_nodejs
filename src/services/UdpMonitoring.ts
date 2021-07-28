@@ -7,14 +7,14 @@
 */
 
 // import section
-import dgram = require('dgram');
+import * as dgram from 'dgram';
 
-import fs = require('fs');
-import https = require('https');
-import WebSocket = require('ws');
+import * as fs from 'fs';
+import * as https from 'https';
+import WebSocket from 'ws';
 import { Server } from 'http';
 import { EnvironmentMapper } from '../utils/environmentMapper';
-import * as servicesHttpServer from './HttpUtilities';
+import { requestJsonPromise } from './HttpUtilities';
 
 // global state variable that keeps track of Mongo connection
 const VARS = EnvironmentMapper.parseEnvironment();
@@ -25,9 +25,9 @@ export class ServiceUdpMonitoring
 {
     counter: number = 0;
     // oldTime: number = Date.now();
-    wss: WebSocket.Server = null;
+    wss: WebSocket.Server;
     timeHistory: { [from: string]: number } = {}
-    state: String;
+    currentState: String = 'NOT INITIALIZED';
     data = '00000';
 
     constructor(serverHttp: Server)
@@ -36,7 +36,7 @@ export class ServiceUdpMonitoring
             cert: fs.readFileSync('/home/focus7/certbot/cert1.pem'),
             key: fs.readFileSync('/home/focus7/certbot/privkey1.pem')
         });
-        
+
         serverUDP.on('error', (err) =>
         {
             console.log(`serverUDP error:\n${err.stack}`);
@@ -49,7 +49,7 @@ export class ServiceUdpMonitoring
         serverUDP.bind(2001);
 
         this.wss = new WebSocket.Server({ server: serverHttp }, () => { console.log('works !!!') });
-        this.wss.on('connection', (ws) => this.connectionStarted(ws));
+        this.wss.on('connection', (ws:WebSocket) => this.wsConnectionStarted(ws));
     }
 
 
@@ -73,42 +73,43 @@ export class ServiceUdpMonitoring
         {
 
             raw = JSON.parse(msg);
+            // console.log(`${msg}`);
 
             switch (raw.gateState)
             {
                 case 1:
-                    this.state = 'IDLE';
+                    this.currentState = 'IDLE';
                     break;
                 case 2:
-                    this.state = 'DEBOUNCE'; // TODO - add timer to count how long does it take to open the gate and to send it directly via websocket !!
+                    this.currentState = 'DEBOUNCE'; // TODO - add timer to count how long does it take to open the gate and to send it directly via websocket !!
                     break;
                 case 3:
-                    if (this.state == 'DEBOUNCE')
+                    if (this.currentState == 'DEBOUNCE')
                     {
                         const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Opening&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
-                        console.log(wirePusherURL);
+                        console.log(wirePusherURL); // debug WIREPUSHER service
 
-                        await servicesHttpServer.getJsonPromise(wirePusherURL);
+                        await requestJsonPromise(wirePusherURL);
                     }
-                    this.state = 'OPENING';
+                    this.currentState = 'OPENING';
                     break;
                 case 4:
-                    this.state = 'OPENED';
+                    this.currentState = 'OPENED';
                     break;
                 case 5:
-                    if (this.state == 'DEBOUNCE')
+                    if (this.currentState == 'DEBOUNCE')
                     {
                         const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Closing&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
-                        console.log(wirePusherURL);
+                        // console.log(wirePusherURL); //debug WIREPUSHER service
 
-                        await servicesHttpServer.getJsonPromise(wirePusherURL);
+                        await requestJsonPromise(wirePusherURL);
                     }
-                    this.state = 'CLOSING';
+                    this.currentState = 'CLOSING';
                     break;
                 case 6:
-                    this.state = 'CLOSED';
+                    this.currentState = 'CLOSED';
                     break;
-                default: this.state = 'INIT';
+                default: this.currentState = 'INIT';
             }
 
             const vars =
@@ -128,8 +129,8 @@ export class ServiceUdpMonitoring
 
             this.wss.clients.forEach(socket =>
             {
-                if (rinfo.address == VARS.URL_HEARTBEAT_GATE_PING_ADDR) socket.send(`${this.state}`);
-            })
+                if (rinfo.address == VARS.URL_HEARTBEAT_GATE_PING_ADDR) socket.send(`${this.currentState}`);
+            });
 
             let elapsed: string | number;
             let timeNow: number = Date.now();
@@ -137,15 +138,15 @@ export class ServiceUdpMonitoring
             elapsed = this.timeHistory[rinfo.address] ? timeNow - this.timeHistory[rinfo.address] : 'N/A';
             this.timeHistory[rinfo.address] = timeNow;
 
-            console.log(`[UDP][RX]: ${printMsg} | ${(this.state as String).padStart(8, ' ')} | delta(ms): ${elapsed} | ${rinfo.address}`);
+            console.log(`[UDP][RX]: ${printMsg} | ${(this.currentState as String).padStart(8, ' ')} | delta(ms): ${elapsed} | ${rinfo.address}`);
 
             // this.oldTime = timeNow;
             // this.timeHistory['from']
 
             // serverUDP.send(printMsg, 2001, '192.168.100.32');
 
-            this.arduinoUdpFun();            
-            
+            this.arduinoUdpFun();
+
             this.counter++;
         }
         catch (err)
@@ -157,16 +158,16 @@ export class ServiceUdpMonitoring
 
     private arduinoUdpFun()
     {
-        const index = Math.floor(Math.random()*5);
-        const val = Math.floor(Math.random()*10);
+        const index = Math.floor(Math.random() * 5);
+        const val = Math.floor(Math.random() * 10);
 
-        this.data = this.data.substring(0,index) + val + this.data.substring(index+1);
+        this.data = this.data.substring(0, index) + val + this.data.substring(index + 1);
 
         // serverUDP.send(this.data, 8888, '192.168.1.39'); // fun with Arduino - test
-        serverUDP.send(String(Math.floor(Math.random()*10000)).padStart(4,'0'), 8888, '192.168.1.48'); // fun with Arduino - test
+        serverUDP.send(String(Math.floor(Math.random() * 10000)).padStart(4, '0'), 8888, '192.168.1.48'); // fun with Arduino - test
     }
 
-    private connectionStarted(ws: WebSocket)
+    private wsConnectionStarted(ws: WebSocket)
     {
         ws.on('message', function incoming(message)
         {

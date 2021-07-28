@@ -9,7 +9,7 @@ export class EnvironmentMapper implements IEnvList
 
     static parseEnvironment(): IEnvVariable
     {
-        const envFile: string = './system-vars.env';
+        const envFile: string = 'system-vars.env';
 
         // logOthers({ 'x': resolve(envFile) });
 
