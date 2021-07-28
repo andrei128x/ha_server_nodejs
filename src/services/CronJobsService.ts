@@ -2,7 +2,7 @@ import * as ping from 'ping';
 import { IEnvVariable, ISensorData, IsEnvList } from '../interfaces/interfaces';
 import { ISensorModel } from '../models/MongoModel';
 import { CronJob } from '../models/CronJobModel';
-import * as sensorsInterface from './SensorsConnector';
+import * as sensorsInterface from './SensorsConnectorService';
 import { Request } from 'express';
 import * as http from 'http';
 
