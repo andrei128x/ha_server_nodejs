@@ -13,15 +13,15 @@ import * as fs from 'fs';
 import * as https from 'https';
 import WebSocket from 'ws';
 import { Server } from 'http';
-import { EnvironmentMapper } from '../utils/environmentMapper';
-import { requestJsonPromise } from './HttpUtilities';
+import { EnvironmentMapper } from '../utils/environment-mapper';
+import { requestJsonPromise } from '../utils/http-utils';
 
 // global state variable that keeps track of Mongo connection
 const VARS = EnvironmentMapper.parseEnvironment();
 const serverUDP = dgram.createSocket('udp4');
 
 
-export class ServiceUdpMonitoring
+export class UdpMonitoringService
 {
     counter: number = 0;
     // oldTime: number = Date.now();
