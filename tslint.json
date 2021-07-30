@@ -12,7 +12,7 @@
       "file-name-casing": [
         true,
         {
-          "^[^I].*ts$": "camel-case"
+          "^[^I].*ts$": "kebab-case"
         }
       ],
       "linebreak-style": false,
