@@ -6,8 +6,7 @@
 */
 
 // import section
-import { IEnvVariable } from './interfaces/interfaces';
-
+import { DotenvParseOutput } from 'dotenv';
 import { scanNetwork } from './services/device-detection.service';
 
 import { ExpressWebService } from './services/express-web.service';
@@ -23,10 +22,10 @@ import { RouteManager } from './routes/route-manager';
 
 class WebApp
 {
-  VARS: IEnvVariable;
-  httpServer: ExpressWebService | null = null; // Express service available without database connection
-  databaseMongoService: DatabaseConnectorService; // global state variable that keeps track of Mongo connection
-  routeManager: RouteManager;
+  VARS: DotenvParseOutput = {};
+  httpServer!: ExpressWebService;
+  databaseMongoService!: DatabaseConnectorService;
+  routeManager!: RouteManager;
 
 
   constructor()
@@ -34,17 +33,29 @@ class WebApp
     setConsole();
     console.log('\n');
 
-    this.VARS = EnvironmentMapper.parseEnvironment();
-    scanNetwork(this.VARS);    // detect local devices based on their MAC address, and configure their specific APIs
+    this.initAsync();
+  }
 
+  private async initAsync()
+  {
+    console.log('starting EnvironmentMapper...');    
+    this.VARS = await new EnvironmentMapper().envData;
+    
+    console.log('scanning network for devices ...');    
+    await scanNetwork(this.VARS); // detect local devices based on their MAC address, and configure their specific APIs
+    
+    console.log('starting ExpressWebService...');    
     this.httpServer = new ExpressWebService(); // Express service available without database connection
     this.databaseMongoService = new DatabaseConnectorService(this.VARS);
 
+    console.log('starting RouteManager...');    
     this.routeManager = new RouteManager(this.VARS, this.httpServer, this.databaseMongoService);
-
+    
+    console.log('starting TimerJobsService...');    
     const httpServer = new TimerJobsService(this.VARS, this.databaseMongoService); // Express service available without database connection
-
-    const streamSourceUDP = new UdpMonitoringService(this.httpServer.httpListeningServer);
+    
+    console.log('starting UdpMonitoringService...');    
+    const streamSourceUDP = new UdpMonitoringService(this.VARS, this.httpServer.httpListeningServer);
   }
 }
 

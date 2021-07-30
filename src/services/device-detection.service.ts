@@ -63,4 +63,13 @@ function updateEnvironmentData(envData: any, element: any)
         console.log(`LIGHT is at IP: ${envData.URL_HEARTBEAT_DOOR_LIGHT_PING_ADDR}`)
     }
 
+    // set up temperature sensor
+    if (element.mac == envData.URL_HEARTBEAT_TEMPERATURE_PING_MAC)
+    {
+        envData.URL_HEARTBEAT_TEMPERATURE_PING_ADDR = element.ip;
+        envData.URL_DEVICE_TEMP_SENSOR = `http://${element.ip}/info.json`
+
+        console.log(`TEMPERATURE sensor is at IP: ${envData.URL_DEVICE_TEMP_SENSOR}`)
+    }
+
 }

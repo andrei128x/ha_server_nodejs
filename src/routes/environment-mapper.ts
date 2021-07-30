@@ -5,17 +5,21 @@ import { resolve } from 'path';
 
 export class EnvironmentMapper
 {
-    envData: Promise<DotenvParseOutput>;
+    envData: DotenvParseOutput;
 
     constructor()
     {
-        this.envData = this.init();
+        console.log('parsing ENV data...');
+        
+        this.envData = {};
+        this.init();
     }
 
     private async init()
     {
-        const result = this.parseEnvironment();
-        return await result;
+        this.envData =  await this.parseEnvironment();
+        process.stdout.write('[DONE]');
+        
     }
 
     private async parseEnvironment(): Promise<DotenvParseOutput>

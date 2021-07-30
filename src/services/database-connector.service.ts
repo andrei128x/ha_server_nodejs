@@ -2,9 +2,9 @@
     Purpose: module provides database operation services
     TODO:   select function based on property name
 */
-import { IEnvVariable } from '../interfaces/interfaces';
 
 // connect to MLAB.COM's account
+import { DotenvParseOutput } from 'dotenv';
 import { connect as mongooseConnect } from 'mongoose';
 
 import { sensorData } from '../models/mongo.model';
@@ -16,7 +16,7 @@ export class DatabaseConnectorService
     mongoServer: string;
     connected: boolean;
 
-    constructor(envData: IEnvVariable)
+    constructor(envData: DotenvParseOutput)
     {
         this.connected = false;
         this.mongoServer = envData?.URL_MONGO_SERVER;
