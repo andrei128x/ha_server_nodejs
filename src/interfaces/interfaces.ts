@@ -1,15 +1,11 @@
-export interface IEnvVariable
+import { DotenvParseOutput } from "dotenv";
+
+export type IEnvList = { VARS: DotenvParseOutput };
+
+
+export function IsEnvList(item: any): item is DotenvParseOutput
 {
-    [envParameter: string]: string;
-}
-
-
-export type IEnvList = { VARS: IEnvVariable };
-
-
-export function IsEnvList(item: any): item is IEnvVariable
-{
-    return ((item as IEnvVariable)) && typeof (item as IEnvVariable) === 'object';
+    return ((item as DotenvParseOutput)) && typeof (item as DotenvParseOutput) === 'object';
 }
 
 

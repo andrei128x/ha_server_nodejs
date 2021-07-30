@@ -1,7 +1,8 @@
 /**
  * @comment empty for now
  */
-import { IEnvVariable, ISensorData } from '../interfaces/interfaces';
+import { DotenvParseOutput } from 'dotenv';
+import { ISensorData } from '../interfaces/interfaces';
 import { ISensorModel } from '../models/mongo.model';
 
 import rateLimit from 'express-rate-limit';
@@ -18,9 +19,9 @@ export class RouteManager
 {
     httpServer: ExpressWebService;
     mongoConnection: DatabaseConnectorService;
-    envData: IEnvVariable;
+    envData: DotenvParseOutput;
 
-    constructor(envData: IEnvVariable, httpServer: ExpressWebService, mongoConnection: DatabaseConnectorService)
+    constructor(envData: DotenvParseOutput, httpServer: ExpressWebService, mongoConnection: DatabaseConnectorService)
     {
         this.envData = envData;
         this.httpServer = httpServer;
@@ -69,6 +70,8 @@ export class RouteManager
     async setUpRouteIncomingSensorsStream()
     {
         // TODO : MOVE to specific module file !!!
+        console.log(`Observable URL ${this.envData.URL_DEVICE_TEMP_SENSOR}`);
+        
         createJsonDataObservable(this.envData.URL_DEVICE_TEMP_SENSOR) // observable generates PERIODIC data
             .subscribe(
                 (data: ISensorData[]) =>

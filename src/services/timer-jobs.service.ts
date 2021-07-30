@@ -1,5 +1,5 @@
 import ping from 'ping';
-import { IEnvVariable } from '../interfaces/interfaces';
+import { DotenvParseOutput } from 'dotenv';
 import { CronJob } from '../models/cron-job.model';
 
 
@@ -8,10 +8,10 @@ import { DatabaseConnectorService } from './database-connector.service';
 export class TimerJobsService
 {
 
-    envData: IEnvVariable;
+    envData: DotenvParseOutput;
     mongoConnection: DatabaseConnectorService;
 
-    constructor(envData: IEnvVariable, mongoConnection: DatabaseConnectorService)
+    constructor(envData: DotenvParseOutput, mongoConnection: DatabaseConnectorService)
     {
         this.envData = envData;
         this.mongoConnection = mongoConnection;

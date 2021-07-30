@@ -7,22 +7,22 @@
 */
 
 // import section
-import dgram from 'dgram';
+import { DotenvParseOutput } from 'dotenv';
 
+import dgram from 'dgram';
 import fs from 'fs';
 import https from 'https';
 import WebSocket from 'ws';
 import { Server } from 'http';
-import { EnvironmentMapper } from '../utils/environment-mapper';
 import { requestJsonPromise } from '../utils/http-utils';
 
 // global state variable that keeps track of Mongo connection
-const VARS = EnvironmentMapper.parseEnvironment();
 const serverUDP = dgram.createSocket('udp4');
-
 
 export class UdpMonitoringService
 {
+    envData: DotenvParseOutput;
+
     counter: number = 0;
     // oldTime: number = Date.now();
     wss: WebSocket.Server;
@@ -30,8 +30,10 @@ export class UdpMonitoringService
     currentState: String = 'NOT INITIALIZED';
     data = '00000';
 
-    constructor(serverHttp: Server)
+    constructor(envData: DotenvParseOutput,serverHttp: Server)
     {
+        this.envData = envData;
+
         const httpsServer = https.createServer({
             cert: fs.readFileSync('/home/focus7/certbot/cert1.pem'),
             key: fs.readFileSync('/home/focus7/certbot/privkey1.pem')
@@ -93,7 +95,7 @@ export class UdpMonitoringService
 
             this.wss.clients.forEach(socket =>
             {
-                if (rinfo.address == VARS.URL_HEARTBEAT_GATE_PING_ADDR) socket.send(`${this.currentState}`);
+                if (rinfo.address == this.envData.URL_HEARTBEAT_GATE_PING_ADDR) socket.send(`${this.currentState}`);
             });
 
             let elapsed: string | number;

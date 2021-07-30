@@ -1,7 +1,6 @@
 
 /*
     PURPOSE:  module where various sensors are defined and their data is acquired
-    TODO:     make connected sensors to  be plug-and-play: parse returned json and return a list compatible with model
 */
 
 import express from 'express';
