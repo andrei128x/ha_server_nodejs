@@ -7,10 +7,10 @@
 */
 
 // import section
-import * as dgram from 'dgram';
+import dgram from 'dgram';
 
-import * as fs from 'fs';
-import * as https from 'https';
+import fs from 'fs';
+import https from 'https';
 import WebSocket from 'ws';
 import { Server } from 'http';
 import { EnvironmentMapper } from '../utils/environment-mapper';
@@ -35,6 +35,13 @@ export class UdpMonitoringService
         const httpsServer = https.createServer({
             cert: fs.readFileSync('/home/focus7/certbot/cert1.pem'),
             key: fs.readFileSync('/home/focus7/certbot/privkey1.pem')
+        },
+        (req, res)=>
+        {
+            console.log(' ~!~~~~~~~~~~~~~~~~~~~~~~~');
+            
+            res.writeHead(200);
+            res.end('cool');
         });
 
         serverUDP.on('error', (err) =>
@@ -50,6 +57,8 @@ export class UdpMonitoringService
 
         this.wss = new WebSocket.Server({ server: serverHttp }, () => { console.log('works !!!') });
         this.wss.on('connection', (ws:WebSocket) => this.wsConnectionStarted(ws));
+
+        const srv = httpsServer.listen(1500);
     }
 
 
@@ -71,48 +80,12 @@ export class UdpMonitoringService
         let raw: any = null;
         try
         {
-
             raw = JSON.parse(msg);
             // console.log(`${msg}`);
 
-            switch (raw.gateState)
-            {
-                case 1:
-                    this.currentState = 'IDLE';
-                    break;
-                case 2:
-                    this.currentState = 'DEBOUNCE'; // TODO - add timer to count how long does it take to open the gate and to send it directly via websocket !!
-                    break;
-                case 3:
-                    if (this.currentState == 'DEBOUNCE')
-                    {
-                        const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Opening&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
-                        console.log(wirePusherURL); // debug WIREPUSHER service
+            this.computeStateMachine(raw);  // no 'await' necessary, this will affect user experience
 
-                        await requestJsonPromise(wirePusherURL);
-                    }
-                    this.currentState = 'OPENING';
-                    break;
-                case 4:
-                    this.currentState = 'OPENED';
-                    break;
-                case 5:
-                    if (this.currentState == 'DEBOUNCE')
-                    {
-                        const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Closing&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
-                        // console.log(wirePusherURL); //debug WIREPUSHER service
-
-                        await requestJsonPromise(wirePusherURL);
-                    }
-                    this.currentState = 'CLOSING';
-                    break;
-                case 6:
-                    this.currentState = 'CLOSED';
-                    break;
-                default: this.currentState = 'INIT';
-            }
-
-            const vars =
+            const formattedData =
             {
                 "ADC0": raw.ADC0.toString().padStart(8, " ")
                 , "ADC1": raw.ADC1.toString().padStart(8, " ")
@@ -125,7 +98,7 @@ export class UdpMonitoringService
                 , "RSSI": raw.RSSI.toString().padStart(4, " ")
             };
 
-            const printMsg = `{ "C":${this.counter}, "A0":${vars.ADC0}, "A1":${vars.ADC1}, "avg0":${vars.avg0}, "avg1":${vars.avg1}, "read0":${vars.read0}, "read1":${vars.read1}, "stable":${vars.stable}, "state":${vars.state}, "RSSI":${vars.RSSI} }`;
+            const printMsg = `{ "C":${this.counter}, "A0":${formattedData.ADC0}, "A1":${formattedData.ADC1}, "avg0":${formattedData.avg0}, "avg1":${formattedData.avg1}, "read0":${formattedData.read0}, "read1":${formattedData.read1}, "stable":${formattedData.stable}, "state":${formattedData.state}, "RSSI":${formattedData.RSSI} }`;
 
             this.wss.clients.forEach(socket =>
             {
@@ -156,7 +129,52 @@ export class UdpMonitoringService
 
     }
 
-    private arduinoUdpFun()
+    private async computeStateMachine(raw: any)
+    {
+        switch (raw.gateState)
+        {
+            case 1:
+                this.currentState = 'IDLE';
+                break;
+
+            case 2:
+                this.currentState = 'DEBOUNCE'; // TODO - add timer to count how long does it take to open the gate and to send it directly via websocket !!
+                break;
+
+            case 3:
+                if (this.currentState == 'DEBOUNCE')
+                {
+                    const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Opening&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
+                    console.log(wirePusherURL); // debug WIREPUSHER service
+
+                    await requestJsonPromise(wirePusherURL);
+                }
+                this.currentState = 'OPENING';
+                break;
+
+            case 4:
+                this.currentState = 'OPENED';
+                break;
+
+            case 5:
+                if (this.currentState == 'DEBOUNCE')
+                {
+                    const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Closing&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
+                    // console.log(wirePusherURL); //debug WIREPUSHER service
+                    await requestJsonPromise(wirePusherURL);
+                }
+                this.currentState = 'CLOSING';
+                break;
+
+            case 6:
+                this.currentState = 'CLOSED';
+                break;
+
+            default: this.currentState = 'INIT';
+        }
+    }
+
+    private async arduinoUdpFun()
     {
         const index = Math.floor(Math.random() * 5);
         const val = Math.floor(Math.random() * 10);
