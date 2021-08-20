@@ -1,5 +1,4 @@
-const arpscan = require('arpscan/promise');
-// import arpScanner from "arpscan/promise";
+import arpscan from "arpscan/promise";
 
 const options = {
     command: '/usr/sbin/arp-scan',
@@ -16,8 +15,7 @@ export async function scanNetwork(env: unknown)
 {
     try
     {
-        // deviceList = await arpscan.arpScanner(   options); // use the 'arp-scan' Linux tool to scan for network devices
-        deviceList = await arpscan(options);
+        deviceList = await arpscan(options);    // use the 'arp-scan' Linux tool to scan for network devices
 
         deviceList.forEach((element: any) =>
         {
@@ -30,7 +28,6 @@ export async function scanNetwork(env: unknown)
         });
 
         // console.log(deviceList);
-        // console.log(newList);
         // console.log(newList.length);
     }
     catch (err)
@@ -69,7 +66,7 @@ function updateEnvironmentData(envData: any, element: any)
         envData.URL_HEARTBEAT_TEMPERATURE_PING_ADDR = element.ip;
         envData.URL_DEVICE_TEMP_SENSOR = `http://${element.ip}/info.json`
 
-        console.log(`TEMPERATURE sensor is at IP: ${envData.URL_DEVICE_TEMP_SENSOR}`)
+        console.log(`TEMPERATURE sensor is at IP: ${envData.URL_HEARTBEAT_TEMPERATURE_PING_ADDR}`)
     }
 
 }

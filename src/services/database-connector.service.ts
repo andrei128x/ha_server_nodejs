@@ -13,8 +13,8 @@ import { throwHere, logOthers } from '../utils/system-utils';
 
 export class DatabaseConnectorService
 {
-    mongoServer: string;
-    connected: boolean;
+    private mongoServer: string;
+    private connected: boolean;
 
     constructor(envData: DotenvParseOutput)
     {
@@ -59,6 +59,13 @@ export class DatabaseConnectorService
 
         return this.connected;
     }
+
+
+    isConnected()
+    {
+        return this.connected;
+    }
+
 
     // insert array of properties into the MongoDB database
     insertSomeDataPromise(data: any[])

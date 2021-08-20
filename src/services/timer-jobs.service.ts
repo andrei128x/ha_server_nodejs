@@ -1,15 +1,21 @@
 import ping from 'ping';
 import { DotenvParseOutput } from 'dotenv';
-import { CronJob } from '../models/cron-job.model';
+import { PeriodicTimer } from '../utils/periodic-timers';
 
 
 import { DatabaseConnectorService } from './database-connector.service';
+import { scanNetwork } from './device-detection.service';
 
+const pingConfigs = {
+    timeout: 2,
+    numeric: false,
+    extra: ['-i .5', '-c 3']
+};
 export class TimerJobsService
 {
 
-    envData: DotenvParseOutput;
-    mongoConnection: DatabaseConnectorService;
+    private envData: DotenvParseOutput;
+    private mongoConnection: DatabaseConnectorService;
 
     constructor(envData: DotenvParseOutput, mongoConnection: DatabaseConnectorService)
     {
@@ -20,25 +26,25 @@ export class TimerJobsService
         this.setUpPingDoorLightHeartbeat();
 
         this.setUpPeriodicAutoCleanUp();
+
+        this.autoUpdateDevices();
     }
 
     setUpPingGateHeartbeat()
     {
-        // MOVE to CronJobs file
-        const cfgs = {
-            timeout: 2,
-            numeric: false,
-            extra: ['-i .5', '-c 3']
-        };
+        // MOVE to PeriodicTimers file
+        const cfgs = pingConfigs;
 
-        const localCronJob1 = new CronJob(() =>
+        const localPeriodicTimer1 = new PeriodicTimer(() =>
         {
-            ping.promise.probe(this.envData.URL_HEARTBEAT_GATE_PING_ADDR, cfgs)
-                .then((r: any) =>
-                {
-                    // console.log(`[OK][INDEX] Ping response: ${r.host} | ${r.numeric_host} | ${r.stddev} | ${r.alive}`);
-                    // console.log(`\nRaw response:\n${r.output}`);
-                });
+            if (this.envData.URL_HEARTBEAT_GATE_PING_ADDR)
+                ping.promise.probe(this.envData.URL_HEARTBEAT_GATE_PING_ADDR, cfgs)
+                    .then((_r: any) =>
+                    {
+                        // console.log(`[OK][TIMER-JOBS] Ping response: ${r.host} | ${r.numeric_host} | ${r.stddev} | ${r.alive}`);
+                        // console.log(`\nRaw response:\n${r.output}`);
+                    })
+            else console.log('[ERR][TIMER-JOBS] GATE IP address not set');
 
             // TODO: add the ping results to the database
 
@@ -48,20 +54,19 @@ export class TimerJobsService
 
     setUpPingDoorLightHeartbeat()
     {
-        // MOVE to CronJobs
-        const cfgs = {
-            timeout: 2,
-            numeric: false,
-            extra: ['-i .5', '-c 3']
-        };
+        // MOVE to PeriodicTimers
+        const cfgs = pingConfigs;
 
-        const localCronJob1 = new CronJob(() =>
+        const localPeriodicTimer1 = new PeriodicTimer(() =>
         {
-            ping.promise.probe(this.envData.URL_HEARTBEAT_DOOR_LIGHT_PING_ADDR, cfgs).then((r: any) =>
-            {
-                // console.log(`[OK][INDEX] Ping response: ${r.host} | ${r.numeric_host} | ${r.stddev} | ${r.alive}`);
-                // console.log(`\nRaw response:\n${r.output}`);
-            });
+            if (this.envData.URL_HEARTBEAT_DOOR_LIGHT_PING_ADDR)
+                ping.promise.probe(this.envData.URL_HEARTBEAT_DOOR_LIGHT_PING_ADDR, cfgs)
+                    .then((_r: any) =>
+                    {
+                        // console.log(`[OK][TIMER-JOBS] Ping response: ${r.host} | ${r.numeric_host} | ${r.stddev} | ${r.alive}`);
+                        // console.log(`\nRaw response:\n${r.output}`);
+                    })
+            else console.log('[ERR][TIMER-JOBS] DOOR IP address not set');
 
             // TODO: add the ping results to the database
 
@@ -72,12 +77,20 @@ export class TimerJobsService
     setUpPeriodicAutoCleanUp()
     {
         // MongoDB autoCleanUp of old data
-        const localCronJob2 = new CronJob(() =>
+        const localPeriodicTimer2 = new PeriodicTimer(() =>
         {
-            if (this.mongoConnection.connected) this.mongoConnection.removeSomeData();
+            if (this.mongoConnection.isConnected()) this.mongoConnection.removeSomeData();
         }, 24 * 3600 * 1000);    // clean-up job runs once every 24 hours
     }
 
 
+    autoUpdateDevices()
+    {
+        // Periodic update of devices list based on MAC changes
+        const localPeriodicTimer2 = new PeriodicTimer(async () =>
+        {
+            await scanNetwork(this.envData);
+        }, 180 * 1000);    // clean-up job runs once every N * 1000 milliseconds
+    }
 
 }

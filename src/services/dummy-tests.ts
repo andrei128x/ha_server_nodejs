@@ -7,6 +7,8 @@
 import express from 'express';
 import * as bodyParser from 'body-parser';
 import cors from 'cors';
+import fs from 'fs';
+import https from 'https';
 
 export function startTestHttpServer()
 {
@@ -31,3 +33,8 @@ export function startTestHttpServer()
     console.log(`[TEST] server de test pe portul ${PORT}`);
   });
 }
+
+const httpsServer = https.createServer({
+  cert: fs.readFileSync('/home/focus7/certbot/fullchain1.pem'),
+  key: fs.readFileSync('/home/focus7/certbot/privkey1.pem')
+});
