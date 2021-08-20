@@ -52,7 +52,7 @@ class WebApp
     this.routeManager = new RouteManager(this.VARS, this.httpServer, this.databaseMongoService);
     
     console.log('starting TimerJobsService...');    
-    const httpServer = new TimerJobsService(this.VARS, this.databaseMongoService); // Express service available without database connection
+    const httpServer = new TimerJobsService(this.VARS, this.databaseMongoService); // list consisting of periodic jobs
     
     console.log('starting UdpMonitoringService...');    
     const streamSourceUDP = new UdpMonitoringService(this.VARS, this.httpServer.httpListeningServer);

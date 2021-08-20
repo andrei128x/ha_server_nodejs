@@ -17,9 +17,9 @@ type RequestParams = Request & { params: { switchState: 'on' | 'off' | 'state' }
 
 export class RouteManager
 {
-    httpServer: ExpressWebService;
-    mongoConnection: DatabaseConnectorService;
-    envData: DotenvParseOutput;
+    private httpServer: ExpressWebService;
+    private mongoConnection: DatabaseConnectorService;
+    private envData: DotenvParseOutput;
 
     constructor(envData: DotenvParseOutput, httpServer: ExpressWebService, mongoConnection: DatabaseConnectorService)
     {

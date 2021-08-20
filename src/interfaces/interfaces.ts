@@ -5,7 +5,7 @@ export type IEnvList = { VARS: DotenvParseOutput };
 
 export function IsEnvList(item: any): item is DotenvParseOutput
 {
-    return ((item as DotenvParseOutput)) && typeof (item as DotenvParseOutput) === 'object';
+    return (item as DotenvParseOutput) && typeof (item as DotenvParseOutput) === 'object';
 }
 
 
