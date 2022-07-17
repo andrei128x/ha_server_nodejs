@@ -5,6 +5,7 @@ import { PeriodicTimer } from '../utils/periodic-timers';
 
 import { DatabaseConnectorService } from './database-connector.service';
 import { scanNetwork } from './device-detection.service';
+import { IAppData } from '../interfaces/interfaces';
 
 const pingConfigs = {
     timeout: 2,
@@ -16,11 +17,13 @@ export class TimerJobsService
 
     private envData: DotenvParseOutput;
     private mongoConnection: DatabaseConnectorService;
+    private appData: IAppData;
 
-    constructor(envData: DotenvParseOutput, mongoConnection: DatabaseConnectorService)
+    constructor(appData: IAppData)
     {
-        this.envData = envData;
-        this.mongoConnection = mongoConnection;
+        this.appData = appData;
+        this.envData = appData.VARS;
+        this.mongoConnection = appData.databaseMongoService!;
 
         this.setUpPingGateHeartbeat();
         this.setUpPingDoorLightHeartbeat();
@@ -89,7 +92,7 @@ export class TimerJobsService
         // Periodic update of devices list based on MAC changes
         const localPeriodicTimer2 = new PeriodicTimer(async () =>
         {
-            await scanNetwork(this.envData);
+            await scanNetwork(this.appData);
         }, 180 * 1000);    // clean-up job runs once every N * 1000 milliseconds
     }
 

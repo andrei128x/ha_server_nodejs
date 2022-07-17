@@ -15,7 +15,6 @@ import { Server } from 'http';
 import { requestJsonPromise } from '../utils/http-utils';
 
 // global state variable that keeps track of Mongo connection
-const serverUDP = dgram.createSocket('udp4');
 
 enum STATES
 {
@@ -34,7 +33,8 @@ export class UdpMonitoringService
     private envData: DotenvParseOutput;
 
     private counter: number;
-    // oldTime: number = Date.now();
+
+    private serverUDP;
     private wss: WebSocket.Server;
     private timeHistory: { [from: string]: number };
     private currentGateState: String;
@@ -48,27 +48,48 @@ export class UdpMonitoringService
         this.currentGateState = STATES.NO_INIT;
         this.data = '00000';
 
-        serverUDP.on('error', (err) =>
-        {
-            console.log(`serverUDP error:\n${err.stack}`);
-            serverUDP.close();
-        });
+        this.serverUDP = this.setUpCommunicationUDP();
 
-        serverUDP.on('listening', this.listeningStartedUDP());
-        serverUDP.on('message', (msg: Buffer, rinfo: dgram.RemoteInfo) => this.messageReceivedUDP(msg.toString(), rinfo));
-
-        serverUDP.bind(2001);
-
-        this.wss = new WebSocket.Server({ server: serverHttp }, () => { console.log('works !!!') });
-        this.wss.on('connection', (ws: WebSocket) => this.wsConnectionStarted(ws));
+        this.wss = this.setUpCommunicationWSS(serverHttp);
     }
 
+
+    private setUpCommunicationUDP()
+    {
+        const tmpServerUDP = dgram.createSocket('udp4');
+
+        tmpServerUDP.on('error', (err) =>
+        {
+            console.log(`serverUDP error:\n${err.stack}`);
+            tmpServerUDP.close();
+        });
+
+        tmpServerUDP.on('listening', this.listeningStartedUDP());
+        tmpServerUDP.on('message', (msg: Buffer, rinfo: dgram.RemoteInfo) => this.messageReceivedUDP(msg.toString(), rinfo));
+
+        tmpServerUDP.bind(2001);
+
+        return tmpServerUDP;
+    }
+
+
+    private setUpCommunicationWSS(serverHttp: Server)
+    {
+        const wssServer = new WebSocket.Server(
+            { server: serverHttp },
+            () => { console.log('WSS Server active'); }
+        );
+
+        wssServer.on('connection', (ws: WebSocket) => this.wsConnectionStarted(ws));
+
+        return wssServer;
+    }
 
     private listeningStartedUDP(): () => void
     {
         return () =>
         {
-            const address = serverUDP.address();
+            const address = this.serverUDP.address();
             console.log(`serverUDP listening ${address.address}:${address.port}`);
         };
     }
@@ -179,10 +200,16 @@ export class UdpMonitoringService
 
     private async notifyGateClosing()
     {
+        const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Closing&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
+        console.log(wirePusherURL); //debug WIREPUSHER service
+
+        try
         {
-            const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Closing&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
-            // console.log(wirePusherURL); //debug WIREPUSHER service
             await requestJsonPromise(wirePusherURL);
+        }
+        catch (err)
+        {
+            console.log(err);
         }
     }
 
@@ -192,7 +219,14 @@ export class UdpMonitoringService
         const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Opening&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
         console.log(wirePusherURL); // debug WIREPUSHER service
 
-        await requestJsonPromise(wirePusherURL);
+        try
+        {
+            await requestJsonPromise(wirePusherURL);
+        }
+        catch (err)
+        {
+            console.log(err);
+        }
     }
 
 
@@ -204,7 +238,7 @@ export class UdpMonitoringService
         this.data = this.data.substring(0, index) + val + this.data.substring(index + 1);
 
         // serverUDP.send(this.data, 8888, '192.168.1.39'); // fun with Arduino - test
-        serverUDP.send(String(Math.floor(Math.random() * 10000)).padStart(4, '0'), 8888, '192.168.1.48'); // fun with Arduino - test
+        this.serverUDP.send(String(Math.floor(Math.random() * 10000)).padStart(4, '0'), 8888, '192.168.1.48'); // fun with Arduino - test
     }
 
 
