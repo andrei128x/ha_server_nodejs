@@ -203,7 +203,14 @@ export class UdpMonitoringService
         const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Closing&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
         console.log(wirePusherURL); //debug WIREPUSHER service
 
-        await requestJsonPromise(wirePusherURL);
+        try
+        {
+            await requestJsonPromise(wirePusherURL);
+        }
+        catch (err)
+        {
+            console.log(err);
+        }
     }
 
 
@@ -212,7 +219,14 @@ export class UdpMonitoringService
         const wirePusherURL = `https://wirepusher.com/send?id=Wba8mpgaR&title=Gate Opening&message=${new Date().toLocaleTimeString('en-US')}&type=YourCustomType&message_id=${Date.now()}`;
         console.log(wirePusherURL); // debug WIREPUSHER service
 
-        await requestJsonPromise(wirePusherURL);
+        try
+        {
+            await requestJsonPromise(wirePusherURL);
+        }
+        catch (err)
+        {
+            console.log(err);
+        }
     }
 
 

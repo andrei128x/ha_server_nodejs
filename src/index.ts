@@ -6,7 +6,6 @@
 */
 
 // import section
-import { DotenvParseOutput } from 'dotenv';
 import { scanNetwork } from './services/device-detection.service';
 
 import { ExpressWebService } from './services/express-web.service';
@@ -19,14 +18,11 @@ import { setConsole } from './utils/console-util';
 
 import { TimerJobsService } from './services/timer-jobs.service';
 import { RouteManager } from './routes/route-manager';
+import { IAppData } from './interfaces/interfaces';
 
 class WebApp
 {
-  VARS: DotenvParseOutput = {};
-  httpServer!: ExpressWebService;
-  databaseMongoService!: DatabaseConnectorService;
-  routeManager!: RouteManager;
-
+  appData!: IAppData;
 
   constructor()
   {
@@ -38,24 +34,28 @@ class WebApp
 
   private async initAsync()
   {
-    console.log('starting EnvironmentMapper...');    
-    this.VARS = await new EnvironmentMapper().envData;
-    
-    console.log('scanning network for devices ...');    
-    await scanNetwork(this.VARS); // detect local devices based on their MAC address, and configure their specific APIs
-    
-    console.log('starting ExpressWebService...');    
-    this.httpServer = new ExpressWebService(); // Express service available without database connection
-    this.databaseMongoService = new DatabaseConnectorService(this.VARS);
+    console.log('starting EnvironmentMapper...');
 
-    console.log('starting RouteManager...');    
-    this.routeManager = new RouteManager(this.VARS, this.httpServer, this.databaseMongoService);
-    
-    console.log('starting TimerJobsService...');    
-    const httpServer = new TimerJobsService(this.VARS, this.databaseMongoService); // list consisting of periodic jobs
-    
-    console.log('starting UdpMonitoringService...');    
-    const streamSourceUDP = new UdpMonitoringService(this.VARS, this.httpServer.httpListeningServer);
+    this.appData = { VARS: {} };
+    this.appData.VARS = await new EnvironmentMapper().envData;
+
+    // console.log(JSON.stringify(this.appData.VARS));
+
+    console.log('scanning network for devices ...');
+    await scanNetwork(this.appData); // detect local devices based on their MAC address, and configure their specific APIs
+
+    console.log('starting ExpressWebService...');
+    this.appData.httpServer = new ExpressWebService(); // Express service available without database connection
+    this.appData.databaseMongoService = new DatabaseConnectorService(this.appData.VARS);
+
+    console.log('starting RouteManager...');
+    this.appData.routeManager = new RouteManager(this.appData.VARS, this.appData.httpServer, this.appData.databaseMongoService);
+
+    console.log('starting TimerJobsService...');
+    const timerJobs = new TimerJobsService(this.appData); // list consisting of periodic jobs
+
+    console.log('starting UdpMonitoringService...');
+    const streamSourceUDP = new UdpMonitoringService(this.appData.VARS, this.appData.httpServer.httpListeningServer);
   }
 }
 
@@ -64,4 +64,3 @@ class WebApp
 // tslint:disable-next-line: no-unused-expression
 new WebApp();
 // [ END APP HERE ]
-

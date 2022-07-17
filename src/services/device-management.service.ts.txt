@@ -1,0 +1,46 @@
+import { IDetectionDataARP, IDeviceDefinition } from "../interfaces/interfaces";
+
+
+export class DeviceManager
+{
+    constructor(this.VARS, this.httpServer, this.databaseMongoService)
+    {
+
+    }
+
+
+
+
+    setUpDetectedDevices(): void
+    {
+        CONFIG_DATA.forEach((configuredDevice: IDeviceDefinition) =>
+        {
+            const detectedDevice: IDetectionDataARP = scannedDeviceListByMAC[configuredDevice.addressMAC];
+
+            if (scannedDeviceListByMAC[configuredDevice.addressMAC])
+            {
+                configuredDevice.addressIP = detectedDevice.ip;
+                configuredDevice.scanDetectionData = detectedDevice;
+
+
+                console.log(`FOUND THIS: ${scannedDeviceListByMAC[configuredDevice.addressMAC]}`);
+
+                switch (configuredDevice.deviceType)
+                {
+                    case IDeviceType.TEMPERATURE:
+                        {
+                            new TempSensor(configuredDevice);
+                        }
+
+                    default:
+                        {
+                            console.log(' ------------------------- ERROR : DEVICE TYPE UNKNOWN --------------------- ');
+                        }
+                }
+
+            }
+        });
+    };
+
+
+}

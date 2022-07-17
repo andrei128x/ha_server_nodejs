@@ -4,19 +4,19 @@ TODO:   refactor and add capabilities similar to Linux's Cron
 */
 
 // includes
-const defaultDelay = 10000;
+const DEFAULT_DELAY = 10000;
 
 // definitions
 export class PeriodicTimer
 {
     private static jobList: NodeJS.Timeout[] = [];
 
-    constructor(cbk: (someArgs?: any) => void, delay: number = defaultDelay, ...args: any)
+    constructor(cbk: (someArgs?: any) => void, delay: number = DEFAULT_DELAY, ...args: any)
     {
         cbk(args);
         const newSize = PeriodicTimer.jobList.push(setInterval(cbk, delay, ...args));
 
-        console.log(`[OK][CRON] Cron ID ${newSize} value set to ${delay === defaultDelay ? '10000[dafault]' : delay} ms`);
+        console.log(`[OK][CRON] Cron ID ${newSize} value set to ${delay === DEFAULT_DELAY ? '10000[dafault]' : delay} ms`);
     }
 
     showJobs()

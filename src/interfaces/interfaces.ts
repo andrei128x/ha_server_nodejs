@@ -1,4 +1,8 @@
 import { DotenvParseOutput } from "dotenv";
+import { TempSensor } from "../routes/devices/temp-sensor";
+import { RouteManager } from "../routes/route-manager";
+import { DatabaseConnectorService } from "../services/database-connector.service";
+import { ExpressWebService } from "../services/express-web.service";
 
 export type IEnvList = { VARS: DotenvParseOutput };
 
@@ -25,27 +29,55 @@ export interface ISensorRawData
     reset: string;
 }
 
+export interface IDetectionDataARP
+{
+    ip: string;
+    mac: string;
+    vendor: string;
+    timestamp: number;
+}
+
+export enum IDeviceType
+{
+    GATE = 'GATE',
+    LIGHT_SONOFF = 'LIGHT_SONOFF',
+    TEMPERATURE = 'TEMPERATURE'
+}
+
 export interface IDeviceItem
 {
     [itemName: string]: string;
 }
 
-export interface IDeviceHeartBeatItem
+export interface IDeviceHandler
 {
-    heartbeat_endpoint: string;
-    heartbeat_period?: number;
+    name: TempSensor;
 }
 
-export interface IDeviceDefinition
+export interface IDeviceDefinition  //TODO - define elements that need to handle this device
 {
-    deviceName: string;
-    mac_address: string;
+    deviceType: IDeviceType;
 
-    address?: string;
+    displayName: string;
 
-    heartbeat_address?: string;
-    heartbeat_period?: number;
+    addressMAC: string;
+    addressIP?: string;
 
-    items: IDeviceItem | IDeviceHeartBeatItem;
-    handler: ((_: unknown[]) => unknown) | null;
+    heartbeatPeriod?: number;
+
+    scanDetectionData?: IDetectionDataARP;
+
+    items: IDeviceItem;
+    handler: ((_: unknown[]) => unknown) | null;    //[x] - forgot original purpose; I presume handler function or class
 }
+
+
+export interface IAppData
+{
+  VARS: DotenvParseOutput;
+  httpServer?: ExpressWebService;
+  databaseMongoService?: DatabaseConnectorService;
+  routeManager?: RouteManager;
+  detectedDevicesARP?: IDetectionDataARP[];
+}
+
