@@ -5,8 +5,9 @@ export function setConsole()
     ['debug', 'log', 'warn', 'error'].forEach((methodName) =>
     {
         const originalLoggingMethod: any = console[methodName as keyof Console];
+        let  newLoggingMethod: any = console[methodName as keyof Console];
 
-        console[methodName as keyof Console] = (firstArgument: any, ...otherArguments: any) =>
+        newLoggingMethod = (message: any, ...optionalParams: any) =>
         {
             const originalPrepareStackTrace = Error.prepareStackTrace;
             Error.prepareStackTrace = (_, stack) => stack;
@@ -17,12 +18,12 @@ export function setConsole()
             // const relativeFileName = path.relative(process.cwd(), callee.getFileName());
             const relativeFileName = path.relative(process.cwd(), callee.getFileName()).split('/')[2]; // only filename, w/o path
             const prefix = `${relativeFileName}:${callee.getLineNumber()}:`;
-            if (typeof firstArgument === 'string')
+            if (typeof message === 'string')
             {
-                originalLoggingMethod('\x1b[33m%s\x1b[0m', prefix, ' ' + firstArgument, ...otherArguments);
+                originalLoggingMethod('\x1b[33m%s\x1b[0m', prefix, ' ' + message, ...optionalParams);
             } else
             {
-                originalLoggingMethod('\x1b[33m%s\x1b[0m', prefix, firstArgument, ...otherArguments);
+                originalLoggingMethod('\x1b[33m%s\x1b[0m', prefix, message, ...optionalParams);
             }
         };
     });
