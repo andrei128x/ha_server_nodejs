@@ -14,7 +14,6 @@ export class ExpressWebService
 
     // the port on which the Home Automation platform responds to queries
     // this is Proxy-Forwarded in NGINX from external port 5201 to local port 3000
-
     PORT = 3000;
 
     app: express.Application;

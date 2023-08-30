@@ -92,8 +92,8 @@ export class TimerJobsService
         // Periodic update of devices list based on MAC changes
         const localPeriodicTimer2 = new PeriodicTimer(async () =>
         {
-            await scanNetwork(this.appData);
-        }, 180 * 1000);    // clean-up job runs once every N * 1000 milliseconds
+            scanNetwork(this.appData);
+        }, 120 * 1000);    // automatic update of devices from the network, every N * 1000 milliseconds; async, not blocking
     }
 
 }
