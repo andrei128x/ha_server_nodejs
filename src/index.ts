@@ -13,6 +13,7 @@ import { DatabaseConnectorService } from './services/database-connector.service'
 
 import { UdpMonitoringService } from './services/udp-monitoring.service';
 
+import { downloadOuiFile } from './services/oui-database-updater.service';
 import { EnvironmentMapper } from './utils/environment-mapper';
 import { setConsole } from './utils/console-util';
 
@@ -36,6 +37,8 @@ class WebApp
 
   private async initAsync()
   {
+    downloadOuiFile();
+
     console.log('starting EnvironmentMapper...');
 
     const readEnvVars: DotenvParseOutput = await new EnvironmentMapper().envData;

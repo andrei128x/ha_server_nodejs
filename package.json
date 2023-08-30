@@ -23,6 +23,7 @@
     "nodemon": "^2.0.9",
     "passport-google-oauth": "^1.0.0",
     "ping": "^0.2.3",
+    "readline-promise": "^1.0.5",
     "rxjs": "^6.6.3",
     "semistandard": "^14.2.3",
     "ts-node": "^8.10.2",

@@ -1,6 +1,7 @@
 import { IAppData, IDetectionDataARP } from "../interfaces/interfaces";
-import fs from 'fs';
-import * as child from 'child_process';
+import { promises as fs } from 'fs';
+import { spawn } from 'child_process';
+import { getVendorByMAC } from "./oui-database-updater.service";
 
 let scannedDeviceListRaw: IDetectionDataARP[] = [];
 let scannedDeviceListByMAC: { [mac: string]: IDetectionDataARP } = {};
@@ -9,18 +10,25 @@ export async function scanNetwork(env: IAppData): Promise<void>
 {
     env.detectedDevicesARP = scannedDeviceListRaw;
 
-    await pingAllNetwork();
-    updateDeviceLists(env);
+    try
+    {
 
-    // console.log(scannedDeviceListRaw);
-    console.log(`Total devices in list: ${scannedDeviceListRaw.length}`);
+        await pingAllNetwork();
+        await updateDeviceLists(env);
+        console.log(`[OK][DEVICES] total devices in list: ${scannedDeviceListRaw.length}`);
+    }
+    catch
+    {
+        console.log('[ERROR][DEVICES] scan for new devices failed');
+    }
 }
 
-function updateDeviceLists(env: IAppData): void
+async function updateDeviceLists(env: IAppData): Promise<void>
 {
-    const procFile: string[] = fs.readFileSync('/proc/net/arp', { encoding: 'utf8' }).split('\n');
+    const arpKernelData: string = await fs.readFile('/proc/net/arp', { encoding: 'utf8' });
+    const procFile: string[] = arpKernelData.split('\n');
 
-    procFile.forEach(line =>
+    procFile.forEach(async line =>
     {
         // console.log(line);
         const lineParts: string[] = line.split(/[\s]+/);
@@ -28,10 +36,14 @@ function updateDeviceLists(env: IAppData): void
         // console.log(lineParts);
         if (lineParts.length == 6)
         {
+            const deviceMAC = lineParts[3].toUpperCase();
+            // const vendor = await getVendorByMAC(deviceMAC);
+            const vendor = 'Espressif';
+
             const device: IDetectionDataARP = {
                 ip: lineParts[0],
-                mac: lineParts[3].toUpperCase(),
-                vendor: 'Espressif',
+                mac: deviceMAC,
+                vendor: vendor,
                 timestamp: 0
             };
 
@@ -49,14 +61,26 @@ function updateDeviceLists(env: IAppData): void
 
 async function pingAllNetwork(): Promise<void>
 {
-    const nmapEvent = child.spawn('nmap', ['-sn', '-n', '192.168.1.0/24']);
+    const nmapEvent = spawn('nmap', ['-sn', '-n', '192.168.1.0/24']);
 
-    nmapEvent.stdout.on('close', (code: number) =>
+    return new Promise((res, rej) =>
     {
-        if (code == 0)
-            return Promise.resolve();
-        else
-            return Promise.reject('[DETECTION] Spawn error');
+        nmapEvent.on('close', (code: number) => 
+        {
+            if (code == 0)
+            {
+                console.log('[OK][DEVICES] ping finished...');
+
+                res();
+            }
+            else
+            {
+                console.log('[ERROR][DEVICES] Spawn error');
+                rej();
+            }
+        });
+
+        nmapEvent.on('error', (code: number) => rej());
     });
 }
 
@@ -93,5 +117,5 @@ function updateEnvironmentData(envData: any, element: any)
         console.log(` - TEMPERATURE sensor is at IP: ${envData.URL_HEARTBEAT_TEMPERATURE_PING_ADDR}\n`);
     }
 
-    console.log();    
+    console.log();
 }
